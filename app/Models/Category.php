@@ -9,19 +9,25 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Category extends Model
 {
     use HasFactory, SoftDeletes;
+
     protected $primaryKey = 'categoryID';
 
     protected $fillable = [
-        "name",
-        "description",
-        "tags",
-
+        'name',
+        'description',
+        'tags',
     ];
+
     public function products()
     {
-        return $this->hasMany(Product::class, 'productID', 'productID');
+        return $this->hasMany(
+            Product::class,
+            'categoryID',
+            'categoryID'
+        );
     }
-protected $casts = [
-        'tags' => 'array', // <--- Añade esta línea
+
+    protected $casts = [
+        'tags' => 'array',
     ];
 }
