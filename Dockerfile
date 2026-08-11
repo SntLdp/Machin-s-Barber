@@ -46,6 +46,8 @@ RUN composer install \
     --no-dev \
     --no-interaction \
     --no-progress
+    
+    RUN php artisan storage:link
 
 # Configurar Apache
 RUN sed -i 's#DocumentRoot .*#DocumentRoot /var/www/html/public#' \
@@ -64,6 +66,7 @@ RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
 RUN chown -R www-data:www-data \
     /var/www/html/storage \
     /var/www/html/bootstrap/cache
+
 
 EXPOSE 80
 
