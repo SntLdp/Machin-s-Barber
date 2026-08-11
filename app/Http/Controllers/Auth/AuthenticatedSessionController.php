@@ -17,45 +17,65 @@ class AuthenticatedSessionController extends Controller
      * Handle an incoming authentication request.
      */
 
-    public function store(LoginRequest $request)
-    {
-        $request->validate([
-            'email' => 'email|required|exists:users',
-            'password' => 'required',
-        ]);
-        $user = User::where('email', $request->email)->first();
+   public function store(LoginRequest $request)
+{
+    $request->validate([
+        'email' => 'email|required|exists:users,email',
+        'password' => 'required',
+    ]);
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'The provided credentials are incorrect'
-                ], 422);
-            }
+    $user = User::where('email', $request->email)->first();
 
-            return back()->withErrors([
-                'email' => 'Las credenciales proporcionadas no son correctas.',
-            ])->onlyInput('email');
-        }
-
-        // Inicia sesión web (necesario para las rutas protegidas con "auth"/"admin")
-        Auth::guard('web')->login($user, $request->boolean('remember'));
-        $request->session()->regenerate();
+    if (!$user || !Hash::check($request->password, $user->password)) {
 
         if ($request->wantsJson()) {
-            $token = $user->createToken('barberia-api-token');
-            return [
-                "user" => $user,
-                "token" => $token->plainTextToken
-            ];
+            return response()->json([
+                'message' => 'Las credenciales proporcionadas no son correctas.'
+            ], 422);
         }
 
-        $user->loadMissing('employee');
-        if ($user->employee && $user->employee->admin_type === 'admin') {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return redirect()->intended(route('home'));
+        return back()->withErrors([
+            'email' => 'Las credenciales proporcionadas no son correctas.',
+        ])->onlyInput('email');
     }
+
+    // ==========================================
+    // LOGIN DE LA APP MÓVIL / API
+    // ==========================================
+
+    if ($request->is('api/*') || $request->wantsJson()) {
+
+        $token = $user->createToken('barberia-api-token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Inicio de sesión exitoso.',
+            'user' => $user,
+            'token' => $token,
+        ]);
+    }
+
+    // ==========================================
+    // LOGIN WEB
+    // ==========================================
+
+    Auth::guard('web')->login(
+        $user,
+        $request->boolean('remember')
+    );
+
+    $request->session()->regenerate();
+
+    $user->loadMissing('employee');
+
+    if (
+        $user->employee &&
+        $user->employee->admin_type === 'admin'
+    ) {
+        return redirect()->route('admin.dashboard');
+    }
+
+    return redirect()->intended(route('home'));
+}
 
     /**
      * Destroy an authenticated session.
