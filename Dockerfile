@@ -1,12 +1,12 @@
 FROM php:8.4-apache
 
-# Eliminar cualquier MPM habilitado y dejar únicamente prefork
+# Eliminar MPMs y dejar únicamente prefork
 RUN rm -f /etc/apache2/mods-enabled/mpm_*.load \
           /etc/apache2/mods-enabled/mpm_*.conf \
     && a2enmod mpm_prefork \
     && a2enmod rewrite
 
-# Dependencias necesarias
+# Dependencias
 RUN apt-get update \
     && apt-get install -y \
         git \
@@ -19,15 +19,31 @@ RUN apt-get update \
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Configuración de Apache para Laravel
+WORKDIR /var/www/html
+
+# Copiar proyecto Laravel
+COPY . .
+
+# Instalar dependencias PHP
+RUN composer install \
+    --optimize-autoloader \
+    --no-dev \
+    --no-interaction \
+    --no-progress
+
+# Configurar Apache para Laravel
 RUN sed -i 's#DocumentRoot .*#DocumentRoot /var/www/html/public#' \
     /etc/apache2/sites-available/000-default.conf
 
 RUN sed -i 's/AllowOverride None/AllowOverride All/g' \
     /etc/apache2/apache2.conf
 
-# Comprobar que solamente exista un MPM
-RUN ls -la /etc/apache2/mods-enabled/mpm_* \
-    && apachectl -t
+# Permisos de Laravel
+RUN chown -R www-data:www-data \
+    /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
-WORKDIR /var/www/html
+# Comprobar Apache
+RUN apachectl -t
+
+EXPOSE 80
