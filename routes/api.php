@@ -105,13 +105,6 @@ Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])
     ->middleware('auth')
     ->name('logout');
 
-Route::get('/cart', [CartController::class, 'index']);
-Route::post('/cart', [CartController::class, 'add']);
-Route::post('/cart/{id}/more', [CartController::class, 'more']);
-Route::post('/cart/{id}/less', [CartController::class, 'less']);
-Route::delete('/cart/{id}', [CartController::class, 'quitItem']);
-Route::delete('/cart', [CartController::class, 'clear']);
-Route::get('/cart/{id}', [CartController::class, 'show']);
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);

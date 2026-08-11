@@ -1833,21 +1833,39 @@ function renderProducts(products) {
     });
 }
 
+function updateCartCount(data) {
+
+    if (!cartCount) {
+        return;
+    }
+
+    let count = 0;
+
+    if (data && Array.isArray(data.producto_cart)) {
+
+        data.producto_cart.forEach(item => {
+            count += Number(item.quantity) || 0;
+        });
+
+    }
+
+    cartCount.textContent = count;
+}
 
 // =====================================================
 // AGREGAR AL CARRITO
 // =====================================================
 
-async function addToCart(productID, button){
+ window.addToCart = async function addToCart(productID, button){
 
-    const originalText = button.textContent;
+   const originalText = button.textContent;
 
     button.disabled = true;
     button.textContent = "Agregando...";
 
     try {
 
-        const response = await fetch("/api/cart", {
+        const response = await fetch("/cart", {
             method: "POST",
 
             headers: {
@@ -1887,7 +1905,8 @@ async function addToCart(productID, button){
         }
 
         button.textContent = "Agregado";
-
+console.log("RESPUESTA CARRITO:", result);
+console.log("DATA CARRITO:", result.data);
         updateCartCount(result.data);
 
         setTimeout(() => {
@@ -1915,7 +1934,7 @@ async function loadCartCount(){
 
     try {
 
-        const response = await fetch("/api/cart", {
+        const response = await fetch("/cart/data", {
             headers: {
                 "Accept": "application/json"
             },

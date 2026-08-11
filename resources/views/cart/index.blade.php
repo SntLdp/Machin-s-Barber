@@ -543,7 +543,7 @@
 
             const response =
                 await fetch(
-                    "/api/cart",
+                    "/cart/data",
                     {
                         headers: {
                             "Accept": "application/json"
@@ -556,7 +556,8 @@
 
             const result =
                 await response.json();
-
+console.log("RESPUESTA /cart/data:", result);
+console.log("PRODUCTOS DEL CARRITO:", result.data?.producto_cart);
 
             if(!response.ok){
 
@@ -733,7 +734,7 @@
     async function moreProduct(productID){
 
         await cartAction(
-            `/api/cart/${productID}/more`,
+            `/cart/${productID}/more`,
             "POST"
         );
     }
@@ -746,7 +747,7 @@
     async function lessProduct(productID){
 
         await cartAction(
-            `/api/cart/${productID}/less`,
+            `/cart/${productID}/less`,
             "POST"
         );
     }
@@ -759,7 +760,7 @@
     async function removeProduct(productID){
 
         await cartAction(
-            `/api/cart/${productID}`,
+            `/cart/${productID}`,
             "DELETE"
         );
     }
@@ -836,7 +837,7 @@
 
 
             await cartAction(
-                "/api/cart",
+                "/cart",
                 "DELETE"
             );
         }

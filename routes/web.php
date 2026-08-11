@@ -50,17 +50,32 @@ Route::get('/products', [ProductController::class, 'index'])
     Route::get('/shop/products', [ProductController::class, 'shop'])
     ->name('shop.products');
 
-// Carrito
-Route::get('/add-to-cart/{product}', [CartController::class, 'add'])
-    ->name('cart.add');
-Route::post('/cart', [CartController::class, 'add'])
-    ->name('cart.add');
-Route::get('/cart/{id}', [CartController::class, 'show'])
-    ->name('cart.show');
-Route::get('/carrito', function () {
-    return view('cart.index');
-})->name('cart.view');
+    //CARRITO
+Route::middleware('web')->group(function () {
 
+    // Página HTML del carrito
+    Route::get('/cart', function () {
+        return view('cart.index');
+    })->name('cart.view');
+
+    // JSON del carrito
+    Route::get('/cart/data', [CartController::class, 'index']);
+
+    // Agregar producto
+    Route::post('/cart', [CartController::class, 'add']);
+
+    // Aumentar / disminuir
+    Route::post('/cart/{id}/more', [CartController::class, 'more']);
+    Route::post('/cart/{id}/less', [CartController::class, 'less']);
+
+    // Eliminar
+    Route::delete('/cart/{id}', [CartController::class, 'quitItem']);
+    Route::delete('/cart', [CartController::class, 'clear']);
+
+    // Esta DEBE estar después de /cart/data
+    Route::get('/cart/{id}', [CartController::class, 'show']);
+
+});
 // Direcciones
 Route::middleware('auth')->group(function () {
     Route::get('/directions', [DirectionController::class, 'index'])
